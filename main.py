@@ -128,6 +128,8 @@ def today_profit():
     dates = data.Date.tolist()
     profits = data.Profit.tolist()
     plt.plot(dates,profits)
+    plt.xlabel("Date")
+    plt.ylabel("Profit(INR)")
     plt.show()
 
 today_profit()
