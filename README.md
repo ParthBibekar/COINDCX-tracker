@@ -11,6 +11,7 @@ You will have to manually enter your investment as the API doesn't support walle
 - [x] Print wallet and portfolio
 - [x] Calculate profit/loss represent in a graph 
 - [ ] Track orders
+- [ ] Detailed analysis of each trade
 
 ***
 ## Screenshots
