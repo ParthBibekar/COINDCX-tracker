@@ -1,4 +1,4 @@
-# Crypto-Watch
+# COINDCX-Tracker
 
 A Crypto investment Tracker using COINDCX api.
 
