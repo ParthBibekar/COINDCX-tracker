@@ -1,43 +1,42 @@
 import pandas as pd
 from matplotlib import pyplot as plt
-import numpy as np
 import hmac
 import hashlib
 import base64
 import json
 import time
 import requests
-import os
 from datetime import datetime
-from pandasgui import show
 from tabulate import tabulate
+import csv
 
+investment = 00.00
 coindcx = json.load(open('./api.json'))
-
 key = coindcx['apikey']
 secret = coindcx['secretkey']
 common_url = "https://api.coindcx.com/exchange"
 
+secret_bytes = bytes(secret, encoding='utf-8')
+timeStamp = int(round(time.time() * 1000))
+body = {
+    "timestamp": timeStamp
+}
+json_body = json.dumps(body, separators = (',', ':'))
+signature = hmac.new(secret_bytes, json_body.encode(), hashlib.sha256).hexdigest()
+url = common_url + "/v1/users/balances"
+ret = {}
+headers = {
+    'Content-Type': 'application/json',
+    'X-AUTH-APIKEY': key,
+    'X-AUTH-SIGNATURE': signature
+}
 
 def getbalance():
     global df
     global myINR
     global myUSDT
     df = pd.DataFrame()
-    secret_bytes = bytes(secret, encoding='utf-8')
-    timeStamp = int(round(time.time() * 1000))
-    body = {
-        "timestamp": timeStamp
-    }
-    json_body = json.dumps(body, separators = (',', ':'))
-    signature = hmac.new(secret_bytes, json_body.encode(), hashlib.sha256).hexdigest()
-    url = common_url + "/v1/users/balances"
-    ret = {}
-    headers = {
-        'Content-Type': 'application/json',
-        'X-AUTH-APIKEY': key,
-        'X-AUTH-SIGNATURE': signature
-    }
+    
     response = requests.post(url, data = json_body, headers = headers)
     data = response.json()
 
@@ -104,12 +103,31 @@ for i in range(len(coins)):
     
 df['currency'] = coins
 df = df[['currency','locked_balance','balance','Current price(USDT)','Asset value(USDT)','Asset value(INR)']]
-print(tabulate(df, headers='keys', tablefmt='psql',showindex=False))
-print("\nINR in the wallet: ",myINR)
-print("USDT in the wallet: ",myUSDT)
 myINR = float(myINR)
 myUSDT = float(myUSDT)
 Total_usdt = float(df['Asset value(USDT)'].sum()) + myUSDT + myINR*usdtToinr
 Total_inr = float(df['Asset value(INR)'].sum()) + myINR + myUSDT/usdtToinr
+print(tabulate(df, headers='keys', tablefmt='psql',showindex=False))
+print("\nINR in the wallet: ",myINR)
+print("USDT in the wallet: ",myUSDT)
 print("\nTotal portfolio value(USDT): ",Total_usdt)
 print("Total portfolio value(INR): ",Total_inr,"\n")
+profit = Total_inr - investment
+print("\nTotal profit: ",profit)
+
+def today_profit():
+    profit = Total_inr - investment
+    profit = int(profit)
+    x = datetime.now()
+    data = (str(x.strftime("%d-%b-%Y")),str(profit))
+    with open('coindcx_log.csv','a',newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(data)
+    column_names = ["Date", "Profit"]
+    data= pd.read_csv("coindcx_log.csv",names=column_names)
+    dates = data.Date.tolist()
+    profits = data.Profit.tolist()
+    plt.plot(dates,profits)
+    plt.show()
+
+today_profit()
