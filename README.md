@@ -3,7 +3,7 @@
 A Crypto investment Tracker using COINDCX api.
 API documentation: https://docs.coindcx.com/#terms-and-conditions
 
-To use enter the api and secret keys in `api.json` file and run `main.py`.
+To use, enter the api and secret keys in `api.json` file and run `main.py`.
 You will have to manually enter your investment as the API doesn't support wallet history.
 ***
 ## TODO
